@@ -11,6 +11,10 @@ backend/**/bin/
 backend/**/obj/
 backend/**/.vs/
 backend/**/Properties/launchSettings.json
+backend/**/appsettings.json
+backend/**/appsettings.Development.json
+backend/**/appsettings.*.json
+!backend/**/appsettings.example.json
 
 # MongoDB
 *.log

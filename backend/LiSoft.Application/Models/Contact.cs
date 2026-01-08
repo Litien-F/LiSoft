@@ -1,7 +1,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace LiSoft.Api.Models;
+namespace LiSoft.Application.Models;
 
 public class Contact
 {

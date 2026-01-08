@@ -1,7 +1,6 @@
-using LiSoft.Api.Models;
-using LiSoft.Api.Services;
-using MongoDB.Driver;
-using Microsoft.Extensions.Logging;
+using LiSoft.MongoDB.Configuration;
+using LiSoft.MongoDB.Services;
+using LiSoft.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,33 +9,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // MongoDB Configuration
-var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB");
-if (string.IsNullOrWhiteSpace(mongoConnectionString))
-{
-    throw new InvalidOperationException(
-        "A string de conexão do MongoDB não foi configurada. " +
-        "Configure 'ConnectionStrings:MongoDB' no appsettings.json ou appsettings.Development.json");
-}
+builder.Services.Configure<MongoDbSettings>(
+    builder.Configuration.GetSection(MongoDbSettings.SectionName));
 
-const string mongoDatabaseName = "system_lisoft";
-var mongoClient = new MongoClient(mongoConnectionString);
-var mongoDatabase = mongoClient.GetDatabase(mongoDatabaseName);
+builder.Services.AddSingleton<IMongoDbService, MongoDbService>();
 
-try
-{
-    mongoClient.GetDatabase("admin").RunCommand<MongoDB.Bson.BsonDocument>(
-        new MongoDB.Bson.BsonDocument("ping", 1));
-    
-    builder.Services.AddSingleton<IMongoClient>(mongoClient);
-    builder.Services.AddScoped<IMongoDatabase>(sp => mongoDatabase);
-}
-catch (Exception ex)
-{
-    throw new InvalidOperationException(
-        $"Não foi possível conectar ao MongoDB. Verifique a string de conexão e se o MongoDB está rodando. " +
-        $"Connection String: {mongoConnectionString}, Database: {mongoDatabaseName}. Erro: {ex.Message}", ex);
-}
-
+// Application Services
 builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddCors(options =>
 {
@@ -51,8 +29,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("Conexão com MongoDB estabelecida com sucesso. Database: {DatabaseName}", mongoDatabaseName);
+// Inicializa o MongoDbService (Singleton) para garantir a conexão
+var mongoDbService = app.Services.GetRequiredService<IMongoDbService>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

@@ -1,4 +1,4 @@
-namespace LiSoft.Api.Models;
+namespace LiSoft.Application.Models;
 
 public class ContactDto
 {

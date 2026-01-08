@@ -1,6 +1,6 @@
-using LiSoft.Api.Models;
+using LiSoft.Application.Models;
 
-namespace LiSoft.Api.Services;
+namespace LiSoft.Application.Services;
 
 public interface IContactService
 {

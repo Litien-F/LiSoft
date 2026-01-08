@@ -1,15 +1,27 @@
-using LiSoft.Api.Models;
+using LiSoft.Application.Models;
+using LiSoft.MongoDB.Configuration;
+using LiSoft.MongoDB.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
-namespace LiSoft.Api.Services;
+namespace LiSoft.Application.Services;
 
 public class ContactService : IContactService
 {
     private readonly IMongoCollection<Contact> _contacts;
+    private readonly ILogger<ContactService> _logger;
 
-    public ContactService(IMongoDatabase database)
+    public ContactService(
+        IMongoDbService mongoDbService,
+        IOptions<MongoDbSettings> settings,
+        ILogger<ContactService> logger)
     {
-        _contacts = database.GetCollection<Contact>("contacts");
+        _logger = logger;
+        var collectionName = settings.Value.Collections.GetValueOrDefault("Contacts", "contacts");
+        _contacts = mongoDbService.GetCollection<Contact>(collectionName);
+        
+        _logger.LogDebug("ContactService inicializado com a coleção: {CollectionName}", collectionName);
     }
 
     public async Task<Contact> CreateContactAsync(ContactDto contactDto)
